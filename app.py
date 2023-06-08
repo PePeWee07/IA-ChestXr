@@ -1,7 +1,5 @@
 import os
 #import urllib.request
-#import cv2
-#import numpy as np
 #from app import app
 from flask import Flask, request, redirect, jsonify, render_template
 from werkzeug.utils import secure_filename
@@ -21,7 +19,7 @@ from torchvision import transforms
 from PIL import Image
 import numpy as np
 import cv2
-#from torchvision import models
+from torchvision import models
 
 from torchcam.methods import GradCAM,LayerCAM,XGradCAM
 
@@ -97,7 +95,7 @@ def upload_file():
         input_tensor = torch.from_numpy(img)
         input_tensor = torch.unsqueeze(input_tensor, 0)
 
-        #modelo
+        #modelo-------------------------------
         out=model(input_tensor)
         print(out)
 
