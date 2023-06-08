@@ -95,7 +95,7 @@ def upload_file():
         input_tensor = torch.from_numpy(img)
         input_tensor = torch.unsqueeze(input_tensor, 0)
 
-        #modelo-------------------------------
+        #Caraga del modelo----------------------
         out=model(input_tensor)
         print(out)
 
@@ -141,7 +141,7 @@ def upload_file():
                         plt.title("Pleural Effusion")
                         plt.savefig('Pleural Effusion.jpg', format='jpg')
                         plt.show()
-                        plt.close()
+                        plt.close()                  
         resp = jsonify({'message' : "Imagen procesada"})
         resp.status_code = 201
         return resp
