@@ -142,7 +142,9 @@ def upload_file():
                         plt.savefig('Pleural Effusion.jpg', format='jpg')
                         plt.show()
                         plt.close()
-        return str(input_tensor)
+        resp = jsonify({'message' : "Imagen procesada"})
+        resp.status_code = 201
+        return resp
     else:               
         resp = jsonify({'message' : 'Allowed file types are, png, jpg, jpeg, gif'})
         resp.status_code = 400
