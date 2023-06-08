@@ -1,4 +1,4 @@
-#import os
+import os
 #import urllib.request
 #import cv2
 #import numpy as np
@@ -23,7 +23,7 @@ checkpoint = torch.load("./aucm_pretrained_model.pth", map_location=torch.device
 model = DenseNet121(pretrained=True, last_activation=False, activations='relu', num_classes=5)
 model.load_state_dict(checkpoint)
 resp = model.eval()
-print(resp)
+#print(resp)
 
 allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -44,11 +44,25 @@ def upload_file():
         resp.status_code = 400
         return resp
     if file and allowed_file(file.filename):
-        #obtener extension de archivo---------
+        #obtener nombre del archivo----------------
         filename = secure_filename(file.filename)
+        print("Nombre de archivo: ",filename)
+
+        #obtener extension de archivo (.jpg)-------
+        extension= os.path.splitext(filename)
+        print('extension:', extension)
+        ext=str(extension)
 
         #Img---------------------------------
-        imageCSV = cv2.imread('/content/validation.jpg', 0)
+        # Lee la imagen enviada desde Postman
+        file = request.files['file']  
+        # Convierte el archivo en una matriz de bytes
+        file_bytes = np.asarray(bytearray(file.read()), dtype=np.uint8)
+        # Carga la imagen utilizando OpenCV
+        imageCSV = cv2.imdecode(file_bytes, cv2.COLOR_GRAY2RGB)
+
+        #imageCSV = cv2.imread(file_bytes, 0)
+        print("Imagen cargada: ",imageCSV)
         image = Image.fromarray(imageCSV)
 
         image = np.array(image)
@@ -63,9 +77,9 @@ def upload_file():
         img= image.transpose((2, 0, 1)).astype(np.float32)
         input_tensor = torch.from_numpy(img)
         input_tensor = torch.unsqueeze(input_tensor, 0)
-        return input_tensor
-    else:
-        resp = jsonify({'message' : 'Allowed file types are txt, pdf, png, jpg, jpeg, gif'})
+        return str(input_tensor)
+    else:               
+        resp = jsonify({'message' : 'Allowed file types are, png, jpg, jpeg, gif'})
         resp.status_code = 400
         return resp   
 
