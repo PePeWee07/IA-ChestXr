@@ -6,7 +6,6 @@ from werkzeug.utils import secure_filename
 #import requests
 #import json
 #from gradcam import *
-#import base64
 
 from libauc.losses import AUCM_MultiLabel, CrossEntropyLoss
 from libauc.optimizers import PESG, Adam
@@ -20,6 +19,7 @@ from PIL import Image
 import numpy as np
 import cv2
 from torchvision import models
+import base64
 
 from torchcam.methods import GradCAM,LayerCAM,XGradCAM
 
@@ -112,37 +112,59 @@ def upload_file():
                         plt.axis('off')
                         plt.title("Cardiomegaly")
                         plt.savefig('Cardiomegaly.jpg', format='jpg')
-                        plt.show()
+                        #plt.show()
                         plt.close()
                 if(i==1):
                         plt.imshow(result)
                         plt.axis('off')
                         plt.title("Edema")
                         plt.savefig('Edema.jpg', format='jpg')
-                        plt.show()
+                        #plt.show()
                         plt.close()
                 if(i==2):
                         plt.imshow(result)
                         plt.axis('off')
                         plt.title("Consolidation")
                         plt.savefig('Consolidation.jpg', format='jpg')
-                        plt.show()
+                        #plt.show()
                         plt.close()
                 if(i==3):
                         plt.imshow(result)
                         plt.axis('off')
                         plt.title("Atelectasis")
                         plt.savefig('Atelectasis.jpg', format='jpg')
-                        plt.show()
+                        #plt.show()
                         plt.close()
                 if(i==4):
                         plt.imshow(result)
                         plt.axis('off')
                         plt.title("Pleural Effusion")
                         plt.savefig('Pleural Effusion.jpg', format='jpg')
-                        plt.show()
+                        #plt.show()
                         plt.close()                  
-        resp = jsonify({'message' : "Imagen procesada"})
+        
+        #evitar el redondeo de los números
+        app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
+        #return in base64 all the images genarated
+        resp = jsonify({'message' : "Imagen procesada",
+                        'Atelectasis': {
+                            'imagen' : base64.b64encode(open('./Atelectasis.jpg', 'rb').read()).decode('utf-8'), 
+                            'Porcentaje': "{:.4f}".format(out[0][3].item())
+                        }, 'Cardiomegaly': {
+                            'imagen' :base64.b64encode(open('./Cardiomegaly.jpg', 'rb').read()).decode('utf-8'), 
+                            'Porcentaje': "{:.4f}".format(out[0][0].item())
+                        }, 'Consolidation': {
+                            'imagen' :base64.b64encode(open('./Consolidation.jpg', 'rb').read()).decode('utf-8'), 
+                            'Porcentaje': "{:.4f}".format(out[0][2].item())
+                        }, 'Edema': {
+                            'imagen' :base64.b64encode(open('./Edema.jpg', 'rb').read()).decode('utf-8'),
+                            'Porcentaje': "{:.4f}".format(out[0][1].item())
+                        }, 'Pleural Effusion': {
+                            'imagen' :base64.b64encode(open('./Pleural Effusion.jpg', 'rb').read()).decode('utf-8'), 
+                            'Porcentaje': "{:.4f}".format(out[0][4].item())
+                        }
+                        })
+
         resp.status_code = 201
         return resp
     else:               
