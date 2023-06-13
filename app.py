@@ -146,24 +146,33 @@ def upload_file():
         #evitar el redondeo de los números
         app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
         #return in base64 all the images genarated
-        resp = jsonify({'message' : "Imagen procesada",
-                        'Atelectasis': {
-                            'imagen' : base64.b64encode(open('./Atelectasis.jpg', 'rb').read()).decode('utf-8'), 
-                            'Porcentaje': "{:.4f}".format(out[0][3].item())
-                        }, 'Cardiomegaly': {
-                            'imagen' :base64.b64encode(open('./Cardiomegaly.jpg', 'rb').read()).decode('utf-8'), 
-                            'Porcentaje': "{:.4f}".format(out[0][0].item())
-                        }, 'Consolidation': {
-                            'imagen' :base64.b64encode(open('./Consolidation.jpg', 'rb').read()).decode('utf-8'), 
-                            'Porcentaje': "{:.4f}".format(out[0][2].item())
-                        }, 'Edema': {
-                            'imagen' :base64.b64encode(open('./Edema.jpg', 'rb').read()).decode('utf-8'),
-                            'Porcentaje': "{:.4f}".format(out[0][1].item())
-                        }, 'Pleural Effusion': {
-                            'imagen' :base64.b64encode(open('./Pleural Effusion.jpg', 'rb').read()).decode('utf-8'), 
-                            'Porcentaje': "{:.4f}".format(out[0][4].item())
-                        }
-                        })
+        resp = jsonify([
+                {
+                    'nombre': 'Atelectasis',
+                    'imagen': base64.b64encode(open('./Atelectasis.jpg', 'rb').read()).decode('utf-8'),
+                    'porcentaje': "{:.4f}".format(out[0][3].item())
+                },
+                {
+                    'nombre': 'Cardiomegaly',
+                    'imagen': base64.b64encode(open('./Cardiomegaly.jpg', 'rb').read()).decode('utf-8'),
+                    'porcentaje': "{:.4f}".format(out[0][0].item())
+                },
+                {
+                    'nombre': 'Consolidation',
+                    'imagen': base64.b64encode(open('./Consolidation.jpg', 'rb').read()).decode('utf-8'),
+                    'porcentaje': "{:.4f}".format(out[0][2].item())
+                },
+                {
+                    'nombre': 'Edema',
+                    'imagen': base64.b64encode(open('./Edema.jpg', 'rb').read()).decode('utf-8'),
+                    'porcentaje': "{:.4f}".format(out[0][1].item())
+                },
+                {
+                    'nombre': 'Pleural Effusion',
+                    'imagen': base64.b64encode(open('./Pleural Effusion.jpg', 'rb').read()).decode('utf-8'),
+                    'porcentaje': "{:.4f}".format(out[0][4].item())
+                }
+            ])
 
         resp.status_code = 201
         return resp
