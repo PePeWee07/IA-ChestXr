@@ -107,39 +107,45 @@ def upload_file():
                 cam_cpu = cam.squeeze(0).cpu()  # Move to CPU before converting to PIL image
                 result = overlay_mask(Image.fromarray(imageCSV).convert("RGB"), to_pil_image(cam_cpu, mode='F'), alpha=0.5)
                 #result = overlay_mask(Image.fromarray(image).convert("RGB"), to_pil_image(cam_cpu, mode='F'), alpha=0.5)
+                # Crear una figura con fondo negro
+                fig = plt.figure(facecolor='black')
                 if(i==0):
-                        plt.imshow(result)
+                        # Mostrar la imagen
+                        plt.imshow(result, interpolation='bicubic')
+                        # Desactivar los ejes
                         plt.axis('off')
-                        plt.title("Cardiomegaly")
-                        plt.savefig('Cardiomegaly.jpg', format='jpg')
-                        #plt.show()
+                        # Establecer el título
+                        plt.title("Cardiomegaly", color='white')
+                        # Guardar la figura con fondo negro
+                        plt.savefig('Cardiomegaly.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
+                        # Cerrar la figura
                         plt.close()
                 if(i==1):
-                        plt.imshow(result)
+                        plt.imshow(result, interpolation='bicubic')
                         plt.axis('off')
-                        plt.title("Edema")
-                        plt.savefig('Edema.jpg', format='jpg')
+                        plt.title("Edema", color='white')
+                        plt.savefig('Edema.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
                         #plt.show()
                         plt.close()
                 if(i==2):
-                        plt.imshow(result)
+                        plt.imshow(result, interpolation='bicubic')
                         plt.axis('off')
-                        plt.title("Consolidation")
-                        plt.savefig('Consolidation.jpg', format='jpg')
+                        plt.title("Consolidation", color='white')
+                        plt.savefig('Consolidation.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
                         #plt.show()
                         plt.close()
                 if(i==3):
-                        plt.imshow(result)
+                        plt.imshow(result, interpolation='bicubic')
                         plt.axis('off')
-                        plt.title("Atelectasis")
-                        plt.savefig('Atelectasis.jpg', format='jpg')
+                        plt.title("Atelectasis", color='white')
+                        plt.savefig('Atelectasis.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
                         #plt.show()
                         plt.close()
                 if(i==4):
-                        plt.imshow(result)
+                        plt.imshow(result, interpolation='bicubic')
                         plt.axis('off')
-                        plt.title("Pleural Effusion")
-                        plt.savefig('Pleural Effusion.jpg', format='jpg')
+                        plt.title("Pleural Effusion", color='white')
+                        plt.savefig('Pleural Effusion.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
                         #plt.show()
                         plt.close()                  
         
