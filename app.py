@@ -55,11 +55,15 @@ def upload_file():
         resp = jsonify({'message' : 'No file part in the request'})
         resp.status_code = 400
         return resp
+    
     file = request.files['file']
+
+    # Comprobar si se seleccionó un archivo
     if file.filename == '':
         resp = jsonify({'message' : 'No file selected for uploading'})
         resp.status_code = 400
         return resp
+    
     if file and allowed_file(file.filename):
         #obtener nombre del archivo----------------
         filename = secure_filename(file.filename)
