@@ -27,7 +27,10 @@ from PIL import Image
 
 from torchcam.utils import overlay_mask
 from torchvision.transforms.functional import normalize, resize, to_pil_image
+import matplotlib
 import matplotlib.pyplot as plt
+#Esto configurará Matplotlib para que use el backend "Agg", que no requiere una GUI y es adecuado para trabajar en entornos sin interfaz gráfica.
+matplotlib.use('Agg')
 from PIL import Image
 
 app = Flask(__name__)
@@ -79,7 +82,6 @@ def upload_file():
         imageCSV = cv2.imdecode(file_bytes, cv2.COLOR_GRAY2RGB)
 
         #imageCSV = cv2.imread(file_bytes, 0)
-        print("Imagen cargada: ",imageCSV)
         image = Image.fromarray(imageCSV)
 
         image = np.array(image)
