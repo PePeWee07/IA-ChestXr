@@ -1,11 +1,6 @@
 import os
-#import urllib.request
-#from app import app
 from flask import Flask, request, redirect, jsonify, render_template
 from werkzeug.utils import secure_filename
-#import requests
-#import json
-#from gradcam import *
 
 from libauc.losses import AUCM_MultiLabel, CrossEntropyLoss
 from libauc.optimizers import PESG, Adam
@@ -23,15 +18,12 @@ import base64
 
 from torchcam.methods import GradCAM,LayerCAM,XGradCAM
 
-from PIL import Image
-
 from torchcam.utils import overlay_mask
 from torchvision.transforms.functional import normalize, resize, to_pil_image
 import matplotlib
 import matplotlib.pyplot as plt
 #Esto configurará Matplotlib para que use el backend "Agg", que no requiere una GUI y es adecuado para trabajar en entornos sin interfaz gráfica.
 matplotlib.use('Agg')
-from PIL import Image
 
 app = Flask(__name__)
 
@@ -40,7 +32,6 @@ checkpoint = torch.load("./aucm_pretrained_model.pth", map_location=torch.device
 model = DenseNet121(pretrained=True, last_activation=False, activations='relu', num_classes=5)
 model.load_state_dict(checkpoint)
 resp = model.eval()
-#print(resp)
 
 allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -77,7 +68,6 @@ def upload_file():
         #from torchcam.methods import GradCAM,LayerCAM,XGradCAM
         cam_extractor = GradCAM(model, 'features.norm5')
 
-        #Img---------------------------------
         # Lee la imagen enviada desde Postman
         file = request.files['file']  
         # Convierte el archivo en una matriz de bytes
@@ -157,6 +147,7 @@ def upload_file():
         
         #evitar el redondeo de los números
         app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
+        
         #return in base64 all the images genarated
         resp = jsonify([
                 {
