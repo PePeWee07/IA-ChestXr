@@ -10,6 +10,7 @@ from libauc.datasets import CheXpert
 import torch
 from torch import nn
 from torchvision import transforms
+import pydicom
 from PIL import Image
 import numpy as np
 import cv2
@@ -33,11 +34,28 @@ model = DenseNet121(pretrained=True, last_activation=False, activations='relu', 
 model.load_state_dict(checkpoint)
 resp = model.eval()
 
-allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+allowed_extensions = {'dcm'}
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
+def dcm_to_jpg(input_path, output_path):
+    # Leer el archivo DICOM
+    ds = pydicom.dcmread(input_path)
+
+    # Obtener la matriz de píxeles
+    pixel_array = ds.pixel_array
+
+    # Crear una imagen PIL a partir de la matriz de píxeles
+    # Convertir la matriz de píxeles a un modo de imagen compatible con JPEG (por ejemplo, "L" para escala de grises de 8 bits)
+    image = Image.fromarray(pixel_array).convert("L")
+
+    # Guardar la imagen en formato JPEG
+    image.save(output_path)
+
+# Ruta de salida para el archivo JPEG
+output_file = "./upload/radiografia.jpg"
 
 @app.route('/radiografia', methods=['POST'])
 def upload_file():
@@ -69,9 +87,20 @@ def upload_file():
         cam_extractor = GradCAM(model, 'features.norm5')
 
         # Lee la imagen enviada desde Postman
-        file = request.files['file']  
-        # Convierte el archivo en una matriz de bytes
-        file_bytes = np.asarray(bytearray(file.read()), dtype=np.uint8)
+        file = request.files['file']
+        # Llamar a la función para convertir el archivo DICOM a JPEG
+        dcm_to_jpg(file, output_file)
+
+        
+        #file_bytes = np.asarray(bytearray(output_file.read()), dtype=np.uint8)
+
+        # Leer el contenido del archivo en una matriz de bytes
+        with open(output_file, "rb") as file:
+            file_bytes_array = file.read()
+
+        # Convertir la matriz de bytes en un arreglo de NumPy
+        file_bytes= np.frombuffer(file_bytes_array, dtype=np.uint8)
+
         # Carga la imagen utilizando OpenCV
         imageCSV = cv2.imdecode(file_bytes, cv2.COLOR_GRAY2RGB)
 
@@ -180,7 +209,7 @@ def upload_file():
         resp.status_code = 201
         return resp
     else:               
-        resp = jsonify({'message' : 'Allowed file types are, png, jpg, jpeg, gif'})
+        resp = jsonify({'message' : 'Allowed file types .dcm'})
         resp.status_code = 400
         return resp   
 
