@@ -1,5 +1,6 @@
 import os
-from flask import Flask, request, redirect, jsonify, render_template
+from flask import Flask, request, redirect, jsonify, render_template, send_file
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
 from libauc.losses import AUCM_MultiLabel, CrossEntropyLoss
@@ -11,6 +12,8 @@ import torch
 from torch import nn
 from torchvision import transforms
 import pydicom
+from pydicom.dataset import Dataset, FileDataset
+from pydicom.uid import generate_uid
 from PIL import Image
 import numpy as np
 import cv2
@@ -27,7 +30,7 @@ import matplotlib.pyplot as plt
 matplotlib.use('Agg')
 
 app = Flask(__name__)
-
+CORS(app)
 
 checkpoint = torch.load("./aucm_pretrained_model.pth", map_location=torch.device('cpu'))
 model = DenseNet121(pretrained=True, last_activation=False, activations='relu', num_classes=5)
@@ -36,13 +39,15 @@ resp = model.eval()
 
 allowed_extensions = {'dcm'}
 
+# Función para comprobar la extensión del archivo
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
+# Función para convertir un archivo DICOM a JPEG
 def dcm_to_jpg(input_path, output_path):
     # Leer el archivo DICOM
-    ds = pydicom.dcmread(input_path)
+    ds = pydicom.dcmread(input_path, force=True)
 
     # Obtener la matriz de píxeles
     pixel_array = ds.pixel_array
@@ -142,35 +147,35 @@ def upload_file():
                         # Establecer el título
                         plt.title("Cardiomegaly", color='white')
                         # Guardar la figura con fondo negro
-                        plt.savefig('Cardiomegaly.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
+                        plt.savefig('./predictions/Cardiomegaly.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
                         # Cerrar la figura
                         plt.close()
                 if(i==1):
                         plt.imshow(result, interpolation='bicubic')
                         plt.axis('off')
                         plt.title("Edema", color='white')
-                        plt.savefig('Edema.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
+                        plt.savefig('./predictions/Edema.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
                         #plt.show()
                         plt.close()
                 if(i==2):
                         plt.imshow(result, interpolation='bicubic')
                         plt.axis('off')
                         plt.title("Consolidation", color='white')
-                        plt.savefig('Consolidation.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
+                        plt.savefig('./predictions/Consolidation.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
                         #plt.show()
                         plt.close()
                 if(i==3):
                         plt.imshow(result, interpolation='bicubic')
                         plt.axis('off')
                         plt.title("Atelectasis", color='white')
-                        plt.savefig('Atelectasis.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
+                        plt.savefig('./predictions/Atelectasis.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
                         #plt.show()
                         plt.close()
                 if(i==4):
                         plt.imshow(result, interpolation='bicubic')
                         plt.axis('off')
                         plt.title("Pleural Effusion", color='white')
-                        plt.savefig('Pleural Effusion.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
+                        plt.savefig('./predictions/Pleural Effusion.jpg', format='jpg', dpi=600, facecolor=fig.get_facecolor())
                         #plt.show()
                         plt.close()                  
         
@@ -181,27 +186,27 @@ def upload_file():
         resp = jsonify([
                 {
                     'nombre': 'Atelectasis',
-                    'imagen': base64.b64encode(open('./Atelectasis.jpg', 'rb').read()).decode('utf-8'),
+                    'imagen': base64.b64encode(open('./predictions/Atelectasis.jpg', 'rb').read()).decode('utf-8'),
                     'porcentaje': "{:.4f}".format(out[0][3].item())
                 },
                 {
                     'nombre': 'Cardiomegaly',
-                    'imagen': base64.b64encode(open('./Cardiomegaly.jpg', 'rb').read()).decode('utf-8'),
+                    'imagen': base64.b64encode(open('./predictions/Cardiomegaly.jpg', 'rb').read()).decode('utf-8'),
                     'porcentaje': "{:.4f}".format(out[0][0].item())
                 },
                 {
                     'nombre': 'Consolidation',
-                    'imagen': base64.b64encode(open('./Consolidation.jpg', 'rb').read()).decode('utf-8'),
+                    'imagen': base64.b64encode(open('./predictions/Consolidation.jpg', 'rb').read()).decode('utf-8'),
                     'porcentaje': "{:.4f}".format(out[0][2].item())
                 },
                 {
                     'nombre': 'Edema',
-                    'imagen': base64.b64encode(open('./Edema.jpg', 'rb').read()).decode('utf-8'),
+                    'imagen': base64.b64encode(open('./predictions/Edema.jpg', 'rb').read()).decode('utf-8'),
                     'porcentaje': "{:.4f}".format(out[0][1].item())
                 },
                 {
                     'nombre': 'Pleural Effusion',
-                    'imagen': base64.b64encode(open('./Pleural Effusion.jpg', 'rb').read()).decode('utf-8'),
+                    'imagen': base64.b64encode(open('./predictions/Pleural Effusion.jpg', 'rb').read()).decode('utf-8'),
                     'porcentaje': "{:.4f}".format(out[0][4].item())
                 }
             ])
@@ -214,6 +219,84 @@ def upload_file():
         return resp   
 
 
+@app.route('/convert', methods=['POST'])
+def convert_image():
+    try:
+        # Verificar si se envió una imagen JPEG
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'})
+        
+        file = request.files['file']
+        # Guardar la imagen JPEG en disco
+        image_path = './convert-to-dm/img.jpg'
+        file.save(image_path)
+
+        # Your input file here
+        INPUT_FILE = image_path
+
+        # Name for output DICOM
+        dicomized_filename = 'convertImg.dcm'
+
+        # Ruta de la carpeta de salida
+        output_folder = 'convert-to-dm'
+        os.makedirs(output_folder, exist_ok=True)
+
+        # Ruta completa del archivo DICOM de salida
+        output_path = os.path.join(output_folder, dicomized_filename)
+
+        # Load image with Pillow
+        img = Image.open(INPUT_FILE)
+        width, height = img.size
+        print("File format is {} and size: {}, {}".format(img.format, width, height))
+
+        #ds = Dataset()
+        ds = pydicom.dcmread('./convert-to-dm/pre-existing.dcm') # pre-existing dicom file
+
+        np_frame = np.array(img.getdata(), dtype=np.uint8)
+        np_frame = np_frame.reshape((img.height, img.width))
+        
+        ds.file_meta = Dataset()
+        ds.file_meta.TransferSyntaxUID = pydicom.uid.ExplicitVRLittleEndian
+        ds.file_meta.MediaStorageSOPClassUID = '1.2.840.10008.5.1.4.1.1.1.1'
+        ds.file_meta.MediaStorageSOPInstanceUID = "1.2.3"
+        ds.file_meta.ImplementationClassUID = "1.2.3.4"
+
+        ds.PatientName = 'Created'
+
+        ds.Rows = img.height
+        ds.Columns = img.width
+        ds.PhotometricInterpretation = "MONOCHROME1"
+        if np_frame.shape[1] == 3:
+            ds.SamplesPerPixel = 3
+        else:
+            ds.SamplesPerPixel = 1
+        ds.BitsStored = 8
+        ds.BitsAllocated = 8
+        ds.HighBit = 7
+        ds.PixelRepresentation = 0
+        ds.PlanarConfiguration = 0
+        ds.NumberOfFrames = 1
+
+        ds.PixelData = np_frame.tobytes()
+        # Ajustar WindowCenter y WindowWidth
+        ds.WindowCenter = -896.5
+        ds.WindowWidth = 255
+
+        ds.SOPClassUID = generate_uid()
+        ds.SOPInstanceUID = generate_uid()
+        ds.StudyInstanceUID = generate_uid()
+        ds.SeriesInstanceUID = generate_uid()
+
+        ds.PixelData = np_frame
+
+        ds.is_little_endian = True
+        ds.is_implicit_VR = False
+
+        ds.save_as(output_path, write_like_original=False)
+        
+        return send_file(output_path, as_attachment=True)
+    except Exception as e:
+            return jsonify({'error': str(e)})
 
 if __name__ == '__main__':
     app.run()
