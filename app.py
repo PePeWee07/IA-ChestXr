@@ -265,7 +265,7 @@ def convert_image():
 
         ds.Rows = img.height
         ds.Columns = img.width
-        ds.PhotometricInterpretation = "MONOCHROME1"
+        ds.PhotometricInterpretation = "MONOCHROME2"
         if np_frame.shape[1] == 3:
             ds.SamplesPerPixel = 3
         else:
