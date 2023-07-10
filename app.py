@@ -37,7 +37,7 @@ model = DenseNet121(pretrained=True, last_activation=False, activations='relu', 
 model.load_state_dict(checkpoint)
 resp = model.eval()
 
-allowed_extensions = {'dcm'}
+allowed_extensions = {'dcm','png', 'jpg', 'jpeg', 'jfif'}
 
 # Función para comprobar la extensión del archivo
 def allowed_file(filename):
@@ -78,6 +78,7 @@ def upload_file():
         resp.status_code = 400
         return resp
     
+    
     if file and allowed_file(file.filename):
         #obtener nombre del archivo----------------
         filename = secure_filename(file.filename)
@@ -93,15 +94,21 @@ def upload_file():
 
         # Lee la imagen enviada desde Postman
         file = request.files['file']
-        # Llamar a la función para convertir el archivo DICOM a JPEG
-        dcm_to_jpg(file, output_file)
 
-        
-        #file_bytes = np.asarray(bytearray(output_file.read()), dtype=np.uint8)
+
+        if filename.lower().endswith('.jpg') or filename.lower().endswith('.jpeg') or filename.lower().endswith('.png') or filename.lower().endswith('.jfif'):
+             print("Archivo jpg")
+             file.save(output_file)
+        elif filename.lower().endswith('.dcm'):
+            # Llamar a la función para convertir el archivo DICOM a JPEG
+            dcm_to_jpg(file, output_file)
+            print("Archivo dcm")     
 
         # Leer el contenido del archivo en una matriz de bytes
         with open(output_file, "rb") as file:
             file_bytes_array = file.read()
+
+
 
         # Convertir la matriz de bytes en un arreglo de NumPy
         file_bytes= np.frombuffer(file_bytes_array, dtype=np.uint8)
@@ -214,7 +221,7 @@ def upload_file():
         resp.status_code = 201
         return resp
     else:               
-        resp = jsonify({'message' : 'Allowed file types .dcm'})
+        resp = jsonify({'message' : 'Allowed file types .dcm, .png, .jpg, .jpeg, .jfif'})
         resp.status_code = 400
         return resp   
 
