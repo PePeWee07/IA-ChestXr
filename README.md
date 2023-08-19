@@ -47,3 +47,6 @@ Esperamos que este proyecto sea valioso para la comunidad médica y tecnológica
 **El Equipo de Desarrollo**: 
 Jose Roman, 
 Sebastina Quevedo
+
+
+[Enlace al Repositorio para la Interfaz](https://github.com/PePeWee07/chest-xr-system-front-end)
