@@ -44,6 +44,6 @@ Este proyecto está bajo la licencia MIT. Puedes obtener más detalles en el arc
 
 Esperamos que este proyecto sea valioso para la comunidad médica y tecnológica. Si tienes preguntas o comentarios, no dudes en abrir un issue en el repositorio.
 
-**El Equipo de Desarrollo**
-Jose Roman
+**El Equipo de Desarrollo**: 
+Jose Roman, 
 Sebastina Quevedo
