@@ -23,6 +23,9 @@
    ```
    pip install -r requirements.txt
    ```
+   ```
+   pip install libauc==1.3.0
+   ```
 
 3. **Ejecutar:** ejecuta la aplicación:
 
